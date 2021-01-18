@@ -6,3 +6,6 @@ The data was analyzed with the method from [Gonen et al. 2020](https://github.co
 
 ## Download data
 Raw and preprocessed data can be downloaded [here](https://drive.google.com/file/d/125kNZOOgBB1SsHQ3CQAODriQdGRxPcyN/view?usp=sharing)
+
+## Visualization
+The data were visualized with the [Embedding Projector](https://projector.tensorflow.org/). The files are available in the models directory. To visualize the data, load *tensors_[year].tsv* and *tensors_[year]_meta.tsv* in the projector. You can then run one of the dimensionality reduction algorithms provided by the tool, or *load tensors_[year]_bookmark.txt* to use the already labeled one (t-SNE, 10000 iterations).
