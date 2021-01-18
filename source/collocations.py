@@ -8,9 +8,12 @@ Created on Wed Nov 11 11:23:48 2020
 import os
 import random
 
-year = 2020
-directory = r'C:\Users\Edo\Tesi\days_{}\raw'.format(year)
-directory_L = r'C:/Users/Edo/Tesi/days_{}/processed/processed_days'.format(year)
+#select the year to scan
+year = None
+
+#compiles lists of files to scan. Insert raw files and processed files directory
+directory = r'/days_{}/raw'.format(year)
+directory_L = r'/days_{}/processed/processed_days'.format(year)
 
 file_list = []
 file_list_L = []
@@ -22,12 +25,15 @@ for entry in os.scandir(directory):
 for entry in os.scandir(directory_L):
     if entry.path.endswith("_clean_sentencesL.txt"):
         file_list_L.append(entry)
-        
+
+
+#select words to search
 words = ['genio']
-# n_collocations = 10
+
+#sets size of context window
 window = 10
 
-#compiles a list of collocations of word
+#compiles a list of collocations of word. Insert collocation directory to print results
 
 for word in words:
     
@@ -46,7 +52,7 @@ for word in words:
         file.close()
 
         collocations_p = '\n'.join(collocations)
-        print(collocations_p, file=open('C:/Users/Edo/Tesi/collocations/{}_{}_collocations.txt'.format(word, year), 'w+', encoding='utf-8'))
+        print(collocations_p, file=open('/collocations/{}_{}_collocations.txt'.format(word, year), 'w+', encoding='utf-8'))
     
     collocations_L = []
     for file_L in file_list_L:
@@ -64,4 +70,4 @@ for word in words:
         file_L.close()
 
         collocations_L_p = '\n'.join(collocations_L)
-        print(collocations_L_p, file=open('C:/Users/Edo/Tesi/collocations/{}_{}_collocations_L.txt'.format(word, year), 'w+', encoding='utf-8'))
+        print(collocations_L_p, file=open('/collocations/{}_{}_collocations_L.txt'.format(word, year), 'w+', encoding='utf-8'))

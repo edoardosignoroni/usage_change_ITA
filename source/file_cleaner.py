@@ -13,18 +13,20 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 
 import re
 import os
-# import nltk
 from nltk.corpus import stopwords
 
+#year of data to process and output directory
 year = 2020
-directory = r'C:\Users\Edo\Tesi\days_{}\processed\processed_days'.format(year)
+directory = r'\days_{}\clean'.format(year)
 
+#user-defined stopwords to be removed
 user_stopwords = ['bla', 'peró', 'cosí', 'bon', 'ehm', 'bhe', 'uh', 'aaaah', 'aaah', 'ahhhh', 'noooo', 'ahahahaha', 'hahahah', 'mmh', 'mhh', 'ahahha', 'mmmh', 'ah', 'ehh', 'eheh', 'ohi', 'ehe' ]
 
+#compiles list of files to process. 
 file_list =[]
 
 for entry in os.scandir(directory):
-    if entry.path.endswith("_sentencesL.txt".format(year)):
+    if entry.path.endswith("_{}.txt".format(year)):
         file_list.append(entry)
         
 init_time = time.time()
@@ -35,7 +37,7 @@ for file in file_list:
     file_name = str(os.path.basename(file)).strip('.txt')
     print('Processing file: {}'.format(str(os.path.basename(file))))
     file = open(file,'r', encoding = 'utf-8')
-    text = file.read().lower()
+    text = file.read().lower() #lowercasing
     text = re.sub(r'http\S+', ' URL', text) #Removes URLs
     text = re.sub(r'[!"”$%&()*+,-.\\:;<=>?@\[\]^_`{|}~…»•😀❤️😀🤔🤣😭😅🙄😉—]', '', text)   #Removes [] and other special chars
     text = re.sub(r'#x200B', '', text)
@@ -60,7 +62,7 @@ for file in file_list:
             
     text = ' '.join(text)
     
-    print (text, file=open('days_{}\\processed\\processed_days\\{}.txt'.format(year, file_name), 'w+', encoding='utf-8'))
+    print (text, file=open('days_{}\clean\{}.txt'.format(year, file_name), 'w+', encoding='utf-8'))
     
     i+=1
     elapsed_time = time.time() - start_time

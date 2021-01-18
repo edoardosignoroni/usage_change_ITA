@@ -6,7 +6,7 @@ Created on Wed Sep 23 15:09:08 2020
 """
 
 #WORD2VEC TRAINING
-# import modules & set up logging
+# import modules 
 import gensim
 import logging
 
@@ -14,9 +14,8 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 
 year = 2020
 
-model = gensim.models.Word2Vec(corpus_file = 'days_{}/processed/days_{}_sentencesT.txt'.format(year, year), size=300, min_count=20, workers=6, sg=1, max_vocab_size=50000)
-# model = gensim.models.Word2Vec.load('models/model_201029_1649_LEMMA_300d_2020.model')
-model_name = '210110_1059_300sg20T'
+model = gensim.models.Word2Vec(corpus_file = 'days_{}/processed/days_{}_sentencesL.txt'.format(year, year), size=300, min_count=20, workers=6, sg=1, max_vocab_size=50000)
+model_name = ''
 model.save('models/{}_{}.model'.format(year, model_name))
 word_vectors = model.wv
 word_vectors.save('models\\{}_{}.kv'.format(year, model_name))
@@ -27,6 +26,7 @@ w2v = gensim.models.KeyedVectors.load(w2v_path)
 
 import io
 
+#converts gensim .kv into .tsv to use in the Embedding Projector
 # Vector file, `\t` seperated the vectors and `\n` seperate the words
 """
 0.1\t0.2\t0.5\t0.9
@@ -51,18 +51,6 @@ for index in range(len(w2v.index2word)):
     out_v.write('\t'.join([str(x) for x in vec]) + "\n")
 out_v.close()
 out_m.close()
-
-# Then we can visuale using the `http://projector.tensorflow.org/` to visualize those two files.
-
-# 1. Open the Embedding Projector.
-# 2. Click on "Load data".
-# 3. Upload the two files we created above: vecs.tsv and meta.tsv.
-
-
-# for testing
-# model = gensim.models.Word2Vec(corpus_file = 'test\output_1000_clean_sentences_LEMMA.txt', size=300, min_count=10, workers=6, sg=1, batch_words=20, max_vocab_size=50000)
-# model.save('test\test_model.model')
-
 
 
  
