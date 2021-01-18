@@ -12,11 +12,13 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 
 import os
 
+#selects year and directories of files, one for input and one for output
 year = 2019
 
-directory = r'C:\Users\Edo\Tesi\days_{}\clean'.format(year)
-processed_dir= r'C:\Users\Edo\Tesi\days_{}\processed\processed_days'.format(year)
+directory = r'days_{}\clean'.format(year)
+processed_dir= r'days_{}\processed\processed_days'.format(year)
 
+#creates and checks lists of files to be processed
 file_list = []
 done_list = []
 
@@ -25,8 +27,8 @@ for entry in os.scandir(directory):
         file_list.append(entry)
 
 for entry in os.scandir(processed_dir):
-    if entry.path.endswith("sentencesT.txt"):
-        entry_name = str(os.path.basename(entry).strip('sentencesT.txt')[:-1])
+    if entry.path.endswith("sentencesL.txt"):
+        entry_name = str(os.path.basename(entry).strip('sentencesL.txt')[:-1])
         done_list.append(entry_name)
 
 for done_entry in done_list:
@@ -51,8 +53,9 @@ if len(file_list) == 0:
     print('ALL DONE!')
 else:
     init_time = time.time()
-    
-    nlp = stanza.Pipeline(lang='it', processors='tokenize', tokenize_batch_size=25, mwt_batch_size=25, pos_batch_size=250, lemma_batch_size=25, lemma_max_dec_len=25, logging_level='WARN', use_gpu=True)
+
+ #preprocesses and lemmatizes files in lists
+    nlp = stanza.Pipeline(lang='it', processors='tokenize, mwt, pos, lemma', tokenize_batch_size=25, mwt_batch_size=25, pos_batch_size=250, lemma_batch_size=25, lemma_max_dec_len=25, logging_level='WARN', use_gpu=True)
     i=0
     for file in file_list:
         
@@ -71,7 +74,7 @@ else:
             for w in s.words:
                 s_list.append(w.text)
            
-            print (" ".join(s_list), file=open('days_{}/processed/processed_days/{}_sentencesT.txt'.format(year, file_name), 'a+', encoding = 'utf-8')) 
+            print (" ".join(s_list), file=open('days_{}/processed/processed_days/{}_sentencesL.txt'.format(year, file_name), 'a+', encoding = 'utf-8')) 
         
         i+=1
         elapsed_time = time.time() - start_time

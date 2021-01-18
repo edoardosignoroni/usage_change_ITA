@@ -14,7 +14,7 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 import os
 
 year = 2019
-directory = r'C:\Users\Edo\Tesi\days_{}\processed\processed_days'.format(year)
+directory = r'\days_{}\processed\processed_days'.format(year)
 
 file_list =[]
 
