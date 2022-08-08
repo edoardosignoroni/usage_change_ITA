@@ -27,6 +27,7 @@ w2v = gensim.models.KeyedVectors.load(w2v_path)
 import io
 
 #converts gensim .kv into .tsv to use in the Embedding Projector
+#adapted from BrikerMan/w2v_visualizer-v2.py
 # Vector file, `\t` seperated the vectors and `\n` seperate the words
 """
 0.1\t0.2\t0.5\t0.9
