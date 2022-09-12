@@ -67,7 +67,7 @@ def process_all_raw(in_path, out_path):
 
 def process_and_join(in_path, out_path, file_name):
     print('Cleaning all the raw files!')
-    preprocess_path = f'{out_path}\\{file_name}_processed'
+    preprocess_path = f'{out_path}/{file_name}_processed'
     process_all_raw(in_path, preprocess_path)
     print('Joining all the raw files into one cleaned file!')
     join_files(preprocess_path, out_path, file_name)

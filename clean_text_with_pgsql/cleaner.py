@@ -30,24 +30,24 @@ def generate_clean_file(out_path, in_file):
 def run_all(raw_dir_path, out_path, file_name):
     if not os.path.isdir(out_path):
         os.mkdir(out_path)
-    out_path = f'{out_path}\\{file_name}'
+    out_path = f'{out_path}/{file_name}'
     if not os.path.isdir(out_path):
         os.mkdir(out_path)
 
     raw.process_and_join(raw_dir_path, out_path, file_name)
 
-    preprocessed_file_path = f'{out_path}\\{file_name}_temp.txt'
+    preprocessed_file_path = f'{out_path}/{file_name}_temp.txt'
     pgm.pg_create_dataset_from_file(preprocessed_file_path, file_name)
 
     print('Starting cleaning file!')
-    processed_file_path = f'{out_path}\\{file_name}.txt'
+    processed_file_path = f'{out_path}/{file_name}.txt'
     generate_clean_file(processed_file_path,preprocessed_file_path)
     print('Finished!')
 
 def run_raw_processing(raw_dir_path, out_path, file_name):
     if not os.path.isdir(out_path):
         os.mkdir(out_path)
-    out_path = f'{out_path}\\{file_name}'
+    out_path = f'{out_path}/{file_name}'
     if not os.path.isdir(out_path):
         os.mkdir(out_path)
         
