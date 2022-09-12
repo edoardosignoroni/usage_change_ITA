@@ -2,6 +2,7 @@ from fileinput import filename
 import psycopg2
 import os
 import cleaner_utils as ut
+from tqdm import tqdm 
 
 def pg_select(table, where_cond=''):
     try:
@@ -133,8 +134,7 @@ def pg_create_dataset_from_file(in_file, file_name):
 
             line_counter = 0
             word_id = 1
-            ut.progress_bar(line_counter, len(text))
-            for line in text:
+            for line in tqdm(text):
                 line = line.replace('\n','')
                 line = line.replace("'","''")
 
@@ -161,20 +161,14 @@ def pg_create_dataset_from_file(in_file, file_name):
                     cur.execute(sql)
 
                 line_counter += 1
-                if line_counter % 1000 == 0 or line_counter == len(text):
-                    ut.progress_bar(line_counter, len(text))
 
-        os.system('clear')
         # UPLOADING DICTIONAY
         dict_counter = 0
-        print(f'\nUploading dictionary with {len(word_dict.keys())} keys!\n')
-        ut.progress_bar(dict_counter, len(word_dict.keys()))
-        for key in word_dict.keys():            
+        print(f'Uploading dictionary with {len(word_dict.keys())} keys!\n')
+        for key in tqdm(word_dict.keys()):
             sql = f"INSERT INTO {file_name}_dict(word, freq, word_code) VALUES('{key}','{word_dict[key]['freq']}','{word_dict[key]['code']}')"
             cur.execute(sql)
             dict_counter += 1
-            if dict_counter % 1000 == 0 or dict_counter == len(word_dict.keys()):
-                ut.progress_bar(dict_counter, len(word_dict.keys()))
 
         print('\nCleaning dictionary uppercase!\n')
 
@@ -201,3 +195,21 @@ def pg_create_dataset_from_file(in_file, file_name):
     finally:
         if conn is not None:
             conn.close()
+
+def get_filtered_data(out_path, file_name):
+    config = ut.config(section='cleaner')
+    query = f'''select string_agg(a.word, ' ')
+    from (
+        select dspf.word word, dspt.word_line word_line
+        from {file_name}_text dspt 
+        inner join {file_name}_dict dspf on dspf.word_code = dspt.word_code
+        where length(dspf.word) >= {config['min_word_len']}
+        and dspf.freq >= {config['min_freq']} 
+        and dspf.word ~ {config['regex_filter']}
+        order by word_line, word_position asc
+    ) as a
+    group by a.word_line
+    '''
+    result = pg_run_query(query, True)
+    print('Query done! Now Joining...')
+    return result
