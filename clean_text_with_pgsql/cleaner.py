@@ -32,10 +32,10 @@ def run_all(raw_dir_path, out_path, file_name):
         os.mkdir(out_path)
 
     raw.process_and_join(raw_dir_path, out_path, file_name)
-
+    os.system('clear')
     preprocessed_file_path = f'{out_path}/{file_name}_temp.txt'
     pgm.pg_create_dataset_from_file(preprocessed_file_path, file_name)
-
+    os.system('clear')
     print('Starting cleaning file!')
     processed_file_path = f'{out_path}/{file_name}.txt'
     generate_clean_file(processed_file_path,file_name)

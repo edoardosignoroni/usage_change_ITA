@@ -164,6 +164,7 @@ def pg_create_dataset_from_file(in_file, file_name):
                 if line_counter % 1000 == 0 or line_counter == len(text):
                     ut.progress_bar(line_counter, len(text))
 
+        os.system('clear')
         # UPLOADING DICTIONAY
         dict_counter = 0
         print(f'\nUploading dictionary with {len(word_dict.keys())} keys!\n')
