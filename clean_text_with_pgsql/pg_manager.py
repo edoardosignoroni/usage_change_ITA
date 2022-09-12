@@ -131,7 +131,7 @@ def pg_create_dataset_from_file(in_file, file_name):
             text = in_file.readlines()
             print(f'Start elaboration of {len(text)} lines!')
 
-            line_counter = 1
+            line_counter = 0
             word_id = 1
             ut.progress_bar(line_counter, len(text))
             for line in text:
@@ -164,7 +164,7 @@ def pg_create_dataset_from_file(in_file, file_name):
                 ut.progress_bar(line_counter, len(text))
 
         # UPLOADING DICTIONAY
-        dict_counter = 1
+        dict_counter = 0
         print(f'\nUploading dictionary with {len(word_dict.keys())} keys!\n')
         ut.progress_bar(dict_counter, len(word_dict.keys()))
         for key in word_dict.keys():            

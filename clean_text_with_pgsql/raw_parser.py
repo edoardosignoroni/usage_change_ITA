@@ -16,7 +16,7 @@ def process_raw(in_file, out_path):
     filter_regex_tag = re.compile('\[.*\]')
     filter_regex_quote = re.compile('^> .*$')    
     filter_regex_newline = re.compile('\n')
-    filter_regex_separator = re.compile('[\(\)\{\}\[\]?!.,;:\'"“^”~’`®\<\>\-*_]')
+    filter_regex_separator = re.compile('[\(\)\{\}\[\]?!.,;:\'"“^”«»~’`®\<\>\-+*_]')
 
     stopword_array = []
     with open('italian_stopwords.txt', 'r', encoding="utf8") as stopwords:        
@@ -66,9 +66,8 @@ def process_all_raw(in_path, out_path):
         ut.progress_bar(i, len(files))
 
 def process_and_join(in_path, out_path, file_name):
-    print('Start raw files cleaning!')
+    print('Cleaning all the raw files!')
     preprocess_path = f'{out_path}\\{file_name}_processed'
     process_all_raw(in_path, preprocess_path)
-    print('Start preprocessed file joining!')
+    print('Joining all the raw files into one cleaned file!')
     join_files(preprocess_path, out_path, file_name)
-    print('Preprocessed file Joined!')

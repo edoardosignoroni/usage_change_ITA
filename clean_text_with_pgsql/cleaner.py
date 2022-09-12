@@ -1,12 +1,13 @@
 import pg_manager as pgm
 import raw_parser as raw
+import cleaner_utils as ut
 import os
 
 def generate_clean_file(out_path, in_file):
     file_name = os.path.basename(in_file)
     file_name = file_name.split('.')[0]
 
-    config = pgm.config(section='cleaner')
+    config = ut.config(section='cleaner')
     query = f'''select string_agg(a.word, ' ')
     from (
         select dspf.word word, dspt.word_line word_line
@@ -27,8 +28,9 @@ def generate_clean_file(out_path, in_file):
             out_file.write(line[0] + '\n')
 
 def run_all(raw_dir_path, out_path, file_name):
+    if not os.path.isdir(out_path):
+        os.mkdir(out_path)
     out_path = f'{out_path}\\{file_name}'
-
     if not os.path.isdir(out_path):
         os.mkdir(out_path)
 
@@ -43,6 +45,8 @@ def run_all(raw_dir_path, out_path, file_name):
     print('Finished!')
 
 def run_raw_processing(raw_dir_path, out_path, file_name):
+    if not os.path.isdir(out_path):
+        os.mkdir(out_path)
     out_path = f'{out_path}\\{file_name}'
     if not os.path.isdir(out_path):
         os.mkdir(out_path)
@@ -50,8 +54,8 @@ def run_raw_processing(raw_dir_path, out_path, file_name):
     raw.process_and_join(raw_dir_path, out_path, file_name)
     print('Finished!')
 
-def run_create_dataset(file_path):
-    pgm.pg_create_dataset_from_file(file_path)
+def run_create_dataset(file_path, file_name):
+    pgm.pg_create_dataset_from_file(file_path, file_name)
     print('Finished!')
 
 def run_generate_clean_file(out_file, table_prefix):
@@ -60,6 +64,6 @@ def run_generate_clean_file(out_file, table_prefix):
     print('Finished!')
 
 #run_all('E:\\Download\\data\\days_2019\\raw', 'E:\\Programmi Python\\clean_text', 'days_2019')
-run_raw_processing('E:\\Download\\data\\days_2019\\raw', 'E:\\Programmi Python\\clean_text', 'days_2019')
-#run_create_dataset('E:\\Programmi Python\\clean_text\\days_2019\\days_2019')
-#run_generate_clean_file('E:\\Download\\data\\days_2019\\raw', 'E:\\Programmi Python\\clean_text', 'days_2019')
+#run_raw_processing('E:\\Download\\data\\days_2019\\raw', 'E:\\test_cleaner', 'days_2019')
+#run_create_dataset('E:\\test_cleaner\\days_2019\\days_2019_temp.txt', 'days_2019')
+#run_generate_clean_file('E:\\test_cleaner\\days_2019\\days_2019_clean.txt', 'days_2019')
