@@ -161,7 +161,8 @@ def pg_create_dataset_from_file(in_file, file_name):
                     cur.execute(sql)
 
                 line_counter += 1
-                ut.progress_bar(line_counter, len(text))
+                if line_counter % 1000 == 0 or line_counter == len(text):
+                    ut.progress_bar(line_counter, len(text))
 
         # UPLOADING DICTIONAY
         dict_counter = 0
@@ -171,7 +172,8 @@ def pg_create_dataset_from_file(in_file, file_name):
             sql = f"INSERT INTO {file_name}_dict(word, freq, word_code) VALUES('{key}','{word_dict[key]['freq']}','{word_dict[key]['code']}')"
             cur.execute(sql)
             dict_counter += 1
-            ut.progress_bar(dict_counter, len(word_dict.keys()))
+            if dict_counter % 1000 == 0 or dict_counter == len(word_dict.keys()):
+                ut.progress_bar(dict_counter, len(word_dict.keys()))
 
         print('\nCleaning dictionary uppercase!\n')
 

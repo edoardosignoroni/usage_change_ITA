@@ -3,10 +3,7 @@ import raw_parser as raw
 import cleaner_utils as ut
 import os
 
-def generate_clean_file(out_path, in_file):
-    file_name = os.path.basename(in_file)
-    file_name = file_name.split('.')[0]
-
+def generate_clean_file(out_path, file_name):
     config = ut.config(section='cleaner')
     query = f'''select string_agg(a.word, ' ')
     from (
@@ -41,7 +38,7 @@ def run_all(raw_dir_path, out_path, file_name):
 
     print('Starting cleaning file!')
     processed_file_path = f'{out_path}/{file_name}.txt'
-    generate_clean_file(processed_file_path,preprocessed_file_path)
+    generate_clean_file(processed_file_path,file_name)
     print('Finished!')
 
 def run_raw_processing(raw_dir_path, out_path, file_name):
