@@ -2,6 +2,7 @@ import pg_manager as pgm
 import raw_parser as raw
 import cleaner_utils as ut
 from simplemma import lemmatize
+import spacy
 import os
 
 def generate_clean_file(out_path, file_name):
@@ -54,6 +55,40 @@ def generate_clean_file_lemmatized(out_path, file_name):
             ut.progress_bar(i, len(result))
             i += 1
 
+def generate_clean_file_lemmatized_spacy(out_path, file_name):
+    config = ut.config(section='cleaner')
+    query = f'''select string_agg(a.word, ' ')
+    from (
+        select dspf.word word, dspt.word_line word_line
+        from {file_name}_text dspt 
+        inner join {file_name}_dict dspf on dspf.word_code = dspt.word_code
+        where length(dspf.word) >= {config['min_word_len']}
+        and dspf.freq >= {config['min_freq']} 
+        and dspf.word ~ {config['regex_filter']}
+        order by word_line, word_position asc
+    ) as a
+    group by a.word_line
+    '''
+    result = pgm.pg_run_query(query, True)
+    print('Query done! Now Joining...')
+    print(len(result))
+    load_model = spacy.load('it_core_news_sm', disable=['parser', 'ner'])
+    with open(out_path, 'w+', encoding='utf-8') as out_file:
+        i=0
+        ut.progress_bar(i, len(result))
+        string_buffer = ''
+        for line in result:
+            string_line = line[0]
+            string_buffer += string_line + '\n'
+            if i % 5000 == 0 or i == len(result):
+                string_buffer_lemm = load_model(string_buffer)
+                string_buffer_lemm = ' '.join([token.lemma_ for token in string_buffer_lemm])
+                string_buffer = ''
+                string_buffer_lemm = string_buffer_lemm.split(' \n ')
+                out_file.write('\n'.join(string_buffer_lemm))
+                ut.progress_bar(i, len(result))
+            i += 1
+
 def run_all(raw_dir_path, out_path, file_name):
     if not os.path.isdir(out_path):
         os.mkdir(out_path)
@@ -94,4 +129,4 @@ def run_generate_clean_file(out_file, table_prefix):
 #run_raw_processing('E:\\Download\\data\\days_2019\\raw', 'E:\\test_cleaner', 'days_2019')
 #run_create_dataset('E:\\test_cleaner\\days_2019\\days_2019_temp.txt', 'days_2019')
 #run_generate_clean_file('E:\\test_cleaner\\days_2019\\days_2019_clean.txt', 'days_2019')
-generate_clean_file_lemmatized('../data/2019_clean/days_2019/days_2019_simp.txt', 'days_2019')
+generate_clean_file_lemmatized_spacy('E:\\test_cleaner\\days_2019\\days_2019_lemm.txt', 'days_2019')
