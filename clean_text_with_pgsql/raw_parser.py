@@ -2,6 +2,7 @@ import os
 import re
 import cleaner_utils as ut
 from pathlib import Path
+from tqdm import tqdm 
 
 def process_raw(in_file, out_path):
     
@@ -46,24 +47,16 @@ def join_files(in_dir, out_path, file_name):
         os.remove(f"{out_path}/{file_name}.txt")
     
     with open(f"{out_path}/{file_name}_temp.txt", 'w+', encoding="utf8") as out_file:
-        i=0
-        ut.progress_bar(i, len(files))
-        for path in files:
+        for path in tqdm(files):
             with open(path, 'r', encoding="utf8") as in_file:
                 for line in in_file:
                     out_file.write(line)
-            i += 1
-            ut.progress_bar(i, len(files))
 
 def process_all_raw(in_path, out_path):
     files = [str(x) for x in Path(f'{in_path}').glob('**/*.txt')]
 
-    i=0
-    ut.progress_bar(i, len(files))
-    for file in files:
+    for file in tqdm(files):
         process_raw(file, out_path)
-        i += 1
-        ut.progress_bar(i, len(files))
 
 def process_and_join(in_path, out_path, file_name):
     print('Cleaning all the raw files!')
