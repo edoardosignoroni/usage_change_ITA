@@ -89,4 +89,4 @@ def run_generate_clean_file(out_file, table_prefix):
 #run_raw_processing('E:\\Download\\data\\days_2019\\raw', 'E:\\test_cleaner', 'days_2019')
 #run_create_dataset('E:\\test_cleaner\\days_2019\\days_2019_temp.txt', 'days_2019')
 #run_generate_clean_file('E:\\test_cleaner\\days_2019\\days_2019_clean.txt', 'days_2019')
-generate_clean_file_lemmatized('../data/2019_clean/days_2019/days_2019_spacy.txt', 'days_2019')
+#generate_clean_file_lemmatized('../data/2019_clean/days_2019/days_2019_spacy.txt', 'days_2019')
