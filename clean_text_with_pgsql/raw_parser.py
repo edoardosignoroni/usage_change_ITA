@@ -36,6 +36,8 @@ def process_raw(in_file, out_path):
                 line = filter_regex_newline.sub('', line)
                 line = filter_regex_separator.sub(' ', line)
                 splitted_line = line.split()
+                if len(splitted_line):
+                    splitted_line[0] = splitted_line[0].lower()
                 splitted_line = [i for i in splitted_line if i.upper() not in stopword_array]
                 if len(splitted_line):                
                     fp.write(' '.join(splitted_line) + '\n')

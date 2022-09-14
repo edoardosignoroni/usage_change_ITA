@@ -1,3 +1,4 @@
+from ast import arg
 from unittest import result
 import pg_manager as pgm
 import raw_parser as raw
@@ -6,9 +7,10 @@ from simplemma import lemmatize
 import spacy
 from tqdm import tqdm 
 import os
+import argparse
 
 def generate_clean_file(out_path, file_name):
-    result = pgm.get_filtered_data(out_path, file_name)
+    result = pgm.get_filtered_data(file_name)
 
     print(len(result))
     
@@ -17,7 +19,7 @@ def generate_clean_file(out_path, file_name):
             out_file.write(line[0] + '\n')
 
 def generate_clean_file_lemmatized(out_path, file_name):
-    result = pgm.get_filtered_data(out_path, file_name)
+    result = pgm.get_filtered_data(file_name)
 
     print(len(result))
 
@@ -32,7 +34,7 @@ def generate_clean_file_lemmatized(out_path, file_name):
             i += 1
 
 def generate_clean_file_lemmatized_spacy(out_path, file_name):
-    result = pgm.get_filtered_data(out_path, file_name)
+    result = pgm.get_filtered_data(file_name)
 
     print(len(result))
 
@@ -51,7 +53,7 @@ def generate_clean_file_lemmatized_spacy(out_path, file_name):
                 out_file.write('\n'.join(string_buffer_lemm))
             i += 1
 
-def run_all(raw_dir_path, out_path, file_name):
+def run_all(raw_dir_path, out_path, file_name, lemm):
     if not os.path.isdir(out_path):
         os.mkdir(out_path)
     out_path = f'{out_path}/{file_name}'
@@ -63,7 +65,10 @@ def run_all(raw_dir_path, out_path, file_name):
     pgm.pg_create_dataset_from_file(preprocessed_file_path, file_name)
     print('Starting cleaning file!')
     processed_file_path = f'{out_path}/{file_name}.txt'
-    generate_clean_file(processed_file_path,file_name)
+    if lemm:
+        generate_clean_file_lemmatized_spacy(processed_file_path,file_name)
+    else:
+        generate_clean_file(processed_file_path,file_name)
     print('Finished!')
 
 def run_raw_processing(raw_dir_path, out_path, file_name):
@@ -85,8 +90,42 @@ def run_generate_clean_file(out_file, table_prefix):
     generate_clean_file(out_file, table_prefix)
     print('Finished!')
 
-#run_all('E:\\Download\\data\\days_2019\\raw', 'E:\\Programmi Python\\clean_text', 'days_2019')
+parser = argparse.ArgumentParser(prog='cleaner',
+                                    usage='%(prog)s mode [options] name',
+                                    description='Filter text data')
+parser.add_argument("mode",
+                    choices=["all", "raw", "dataset", "clean"],
+                    help="Execution mode: can run all the cleanings or just some specific part.")
+parser.add_argument("-l",
+                    action='store_true',
+                    help="With lemmatization")
+parser.add_argument("-i",
+                    action='store',
+                    help="Input Path")
+parser.add_argument("-o",
+                    action='store',
+                    help="Output Path")
+parser.add_argument("name",
+                    help="Name of the produced file")
+
+if __name__ == '__main__':
+    args = parser.parse_args()
+
+    match args.mode:
+        case "all":
+            run_all(args.i, args.o, args.name, args.l)
+        case "raw":
+            run_raw_processing(args.i, args.o, args.name)
+        case "dataset":
+            run_create_dataset(args.i, args.name)
+        case "clean":
+            if args.l:
+                generate_clean_file_lemmatized_spacy(args.o, args.name)
+            else:
+                run_generate_clean_file(args.o, args.name)
+
+#run_all('E:\\Download\\data\\days_2020\\raw', 'E:\\test_cleaner', 'days_2020')
 #run_raw_processing('E:\\Download\\data\\days_2019\\raw', 'E:\\test_cleaner', 'days_2019')
 #run_create_dataset('E:\\test_cleaner\\days_2019\\days_2019_temp.txt', 'days_2019')
 #run_generate_clean_file('E:\\test_cleaner\\days_2019\\days_2019_clean.txt', 'days_2019')
-generate_clean_file_lemmatized('../data/2019_clean/days_2019/days_2019_spacy.txt', 'days_2019')
+#generate_clean_file_lemmatized_spacy('E:\\test_cleaner\\days_2019\\days_2019_lemm_spacy.txt', 'days_2019')

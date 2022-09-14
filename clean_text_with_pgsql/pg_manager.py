@@ -176,12 +176,38 @@ def pg_create_dataset_from_file(in_file, file_name):
         
         cur.execute(clean_inner_uppercase)
 
+        config = ut.config(section='cleaner')
+
         clean_first_word_uppercase = f'''
-            UPDATE {file_name}_dict dict
-            set word = LOWER(word)
-            from {file_name}_text dt
-            WHERE dt.word_code = dict.word_code
-            and dt.word_position = 1
+            update {file_name}_dict dd1
+            set word = LOWER(dd1.word)
+            from (
+                select dd.word, sum(dd.freq) freq
+                from {file_name}_dict dd 
+                where dd.word = LOWER(dd.word)
+                group by dd.word
+            ) dd2
+            where SUBSTRING(dd1.word, 1) != LOWER(SUBSTRING(dd1.word, 1))
+            and SUBSTRING(dd2.word, 1) = LOWER(SUBSTRING(dd1.word, 1))
+            and (dd2.freq) > (dd1.freq * {config['rateo_more_lowercase_init']} );
+
+            update {file_name}_dict dd2
+            set word = INITCAP(dd2.word)
+            from (
+                select dd.word, sum(dd.freq) freq
+                from {file_name}_dict dd 
+                where dd.word != LOWER(dd.word)
+                group by dd.word
+            ) dd1
+            inner join (
+                select dd.word, sum(dd.freq) freq
+                from {file_name}_dict dd 
+                where dd.word = LOWER(dd.word)
+                group by dd.word
+            ) dd3 on SUBSTRING(dd3.word, 1) = LOWER(SUBSTRING(dd1.word, 1))
+            where SUBSTRING(dd2.word, 1) = LOWER(SUBSTRING(dd2.word, 1))
+            and SUBSTRING(dd2.word, 1) = LOWER(SUBSTRING(dd1.word, 1))
+            and (dd1.freq) > (dd3.freq * {config['rateo_more_uppercase_init']} );
         '''
         cur.execute(clean_first_word_uppercase)
 
@@ -196,7 +222,7 @@ def pg_create_dataset_from_file(in_file, file_name):
         if conn is not None:
             conn.close()
 
-def get_filtered_data(out_path, file_name):
+def get_filtered_data(file_name):
     config = ut.config(section='cleaner')
     query = f'''select string_agg(a.word, ' ')
     from (
