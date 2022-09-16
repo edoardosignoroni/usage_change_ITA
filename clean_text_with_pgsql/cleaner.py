@@ -71,11 +71,24 @@ def spacy_lemmatize(text, model):
 def stanza_lemmatize(text):
     text_lemm = []
     nlp = stanza.Pipeline(lang='it', processors='tokenize,mwt,pos,lemma', use_gpu=True)
-    for line in tqdm(text):
+    '''for line in tqdm(text):
         line = line.replace('\n', '')
         splitted_lemm_line = nlp(line)
         joined_lemm_line = ' '.join([word.lemma for sent in splitted_lemm_line.sentences for word in sent.words])
         text_lemm.append(joined_lemm_line)
+    '''
+    i=1
+    string_buffer = ''
+    for line in tqdm(text):
+        line = line.replace('\n', '')
+        string_buffer += line + '\n'
+        if i % 5000 == 0 or i >= len(text):
+            string_buffer_lemm = nlp(string_buffer)
+            for sent in string_buffer_lemm.sentences:
+                string_lemm = ' '.join([word.lemma for word in sent.words])
+                text_lemm.append(string_lemm)
+            string_buffer = ''
+        i += 1
     return text_lemm
 
 def run_all(raw_dir_path, out_path, file_name):
@@ -152,19 +165,19 @@ parser.add_argument("name",
                     help="Name of the produced file")
 
 if __name__ == '__main__':
-    args = parser.parse_args()
+    #args = parser.parse_args()
 
-    #mode = 'lemm'
-    #i = 'E:\\test_cleaner\\days_2019\\days_2019_temp.txt'
-    #o = 'E:\\test_cleaner\\days_2019_lemm_test.txt'
-    #l = True
-    #name = 'days_2019'
+    mode = 'lemm'
+    i = 'E:\\test_cleaner\\days_2019\\days_2019_temp.txt'
+    o = 'E:\\test_cleaner\\days_2019\\days_2019_lemm_test.txt'
+    l = True
+    name = 'days_2019'
     
-    mode = args.mode
-    i = args.i
-    o = args.o
-    l = args.l
-    name = args.name    
+    #mode = args.mode
+    #i = args.i
+    #o = args.o
+    #l = args.l
+    #name = args.name    
 
     if mode == "all":        
         if l:
