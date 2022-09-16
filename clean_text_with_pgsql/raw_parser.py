@@ -5,6 +5,8 @@ from pathlib import Path
 from tqdm import tqdm 
 
 def process_raw(in_file, out_path):
+
+    config = ut.config(section='cleaner')
     
     file_name = os.path.basename(in_file)
     file_name = file_name.split('.')[0]
@@ -36,8 +38,10 @@ def process_raw(in_file, out_path):
                 line = filter_regex_newline.sub('', line)
                 line = filter_regex_separator.sub(' ', line)
                 splitted_line = line.split()
+                if len(splitted_line):
+                    splitted_line[0] = splitted_line[0].lower()
                 splitted_line = [i for i in splitted_line if i.upper() not in stopword_array]
-                if len(splitted_line):                
+                if len(splitted_line) >= int(config['min_word_in_line']):                
                     fp.write(' '.join(splitted_line) + '\n')
 
 def join_files(in_dir, out_path, file_name):
