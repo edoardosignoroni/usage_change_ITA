@@ -19,7 +19,7 @@ def process_raw(in_file, out_path):
     filter_regex_tag = re.compile('\[.*\]')
     filter_regex_quote = re.compile('^> .*$')    
     filter_regex_newline = re.compile('\n')
-    filter_regex_separator = re.compile('[\(\)\{\}\[\]?!.,;:\'"“^”«»~’`®\<\>\-+*_]')
+    filter_regex_separator = re.compile('[\(\)\{\}\[\]?!.,;:\'"“^”«»~’`®\<\>\+*_]')
 
     stopword_array = []
     with open('italian_stopwords.txt', 'r', encoding="utf8") as stopwords:        
