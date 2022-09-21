@@ -50,7 +50,7 @@ def join_files(in_dir, out_path, file_name):
     if os.path.isfile(f"{out_path}/{file_name}.txt"):
         os.remove(f"{out_path}/{file_name}.txt")
     
-    with open(f"{out_path}/{file_name}_temp.txt", 'w+', encoding="utf8") as out_file:
+    with open(f"{out_path}/{file_name}_joined.txt", 'w+', encoding="utf8") as out_file:
         for path in tqdm(files):
             with open(path, 'r', encoding="utf8") as in_file:
                 for line in in_file:
