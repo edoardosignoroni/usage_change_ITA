@@ -19,7 +19,7 @@ def process_raw(in_file, out_path):
     filter_regex_tag = re.compile('\[.*\]')
     filter_regex_quote = re.compile('^> .*$')    
     filter_regex_newline = re.compile('\n')
-    filter_regex_separator = re.compile('[\(\)\{\}\[\]?!.,;:\'"“^”«»~’`®\<\>\-+*_]')
+    filter_regex_separator = re.compile('[\(\)\{\}\[\]?!.,;:\'"“^”«»~’`®\<\>\+*_]')
 
     stopword_array = []
     with open('italian_stopwords.txt', 'r', encoding="utf8") as stopwords:        
@@ -50,7 +50,7 @@ def join_files(in_dir, out_path, file_name):
     if os.path.isfile(f"{out_path}/{file_name}.txt"):
         os.remove(f"{out_path}/{file_name}.txt")
     
-    with open(f"{out_path}/{file_name}_temp.txt", 'w+', encoding="utf8") as out_file:
+    with open(f"{out_path}/{file_name}_joined.txt", 'w+', encoding="utf8") as out_file:
         for path in tqdm(files):
             with open(path, 'r', encoding="utf8") as in_file:
                 for line in in_file:

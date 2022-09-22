@@ -1,8 +1,10 @@
 from fileinput import filename
 import psycopg2
-import os
-import cleaner_utils as ut
 from tqdm import tqdm 
+import os
+import re
+
+import cleaner_utils as ut
 
 def pg_select(table, where_cond=''):
     try:
@@ -126,7 +128,7 @@ def pg_create_dataset_from_file(in_file, file_name):
         params = ut.config()
         conn = psycopg2.connect(**params)
         cur = conn.cursor()
-
+        
         # READING FILE FOR DICTIONARY GENARATIONE AND WORD POSITION UPLOADING
         with open(in_file, 'r', encoding="utf8") as in_file:
             text = in_file.readlines()
@@ -170,7 +172,7 @@ def pg_create_dataset_from_file(in_file, file_name):
             cur.execute(sql)
             dict_counter += 1
 
-        print('\nCleaning dictionary uppercase!\n')
+        print('Cleaning dictionary uppercase!\n')
 
         clean_inner_uppercase = f'UPDATE {file_name}_dict SET word = LOWER(word) WHERE SUBSTRING(word, 2) != LOWER(SUBSTRING(word, 2))'
         
@@ -179,37 +181,122 @@ def pg_create_dataset_from_file(in_file, file_name):
         config = ut.config(section='cleaner')
 
         clean_first_word_uppercase = f'''
-            update {file_name}_dict dd1
-            set word = LOWER(dd1.word)
-            from (
-                select dd.word, sum(dd.freq) freq
-                from {file_name}_dict dd 
-                where dd.word = LOWER(dd.word)
-                group by dd.word
-            ) dd2
-            where SUBSTRING(dd1.word, 1) != LOWER(SUBSTRING(dd1.word, 1))
-            and SUBSTRING(dd2.word, 1) = LOWER(SUBSTRING(dd1.word, 1))
-            and (dd2.freq) > (dd1.freq * {config['rateo_more_lowercase_init']} );
+        update {file_name}_dict dd1
+        set word = LOWER(dd1.word)
+        from (
+            select dd.word, sum(dd.freq) freq
+            from {file_name}_dict dd 
+            where dd.word = LOWER(dd.word)
+            group by dd.word
+        ) dd2
+        where SUBSTRING(dd1.word, 1) != LOWER(SUBSTRING(dd1.word, 1))
+        and SUBSTRING(dd2.word, 1) = LOWER(SUBSTRING(dd1.word, 1))
+        and (dd2.freq) > (dd1.freq * {config['rateo_more_lowercase_init']} );
 
-            update {file_name}_dict dd2
-            set word = INITCAP(dd2.word)
-            from (
-                select dd.word, sum(dd.freq) freq
-                from {file_name}_dict dd 
-                where dd.word != LOWER(dd.word)
-                group by dd.word
-            ) dd1
-            inner join (
-                select dd.word, sum(dd.freq) freq
-                from {file_name}_dict dd 
-                where dd.word = LOWER(dd.word)
-                group by dd.word
-            ) dd3 on SUBSTRING(dd3.word, 1) = LOWER(SUBSTRING(dd1.word, 1))
-            where SUBSTRING(dd2.word, 1) = LOWER(SUBSTRING(dd2.word, 1))
-            and SUBSTRING(dd2.word, 1) = LOWER(SUBSTRING(dd1.word, 1))
-            and (dd1.freq) > (dd3.freq * {config['rateo_more_uppercase_init']} );
+        update {file_name}_dict dd2
+        set word = INITCAP(dd2.word)
+        from (
+            select dd.word, sum(dd.freq) freq
+            from {file_name}_dict dd 
+            where dd.word != LOWER(dd.word)
+            group by dd.word
+        ) dd1
+        inner join (
+            select dd.word, sum(dd.freq) freq
+            from {file_name}_dict dd 
+            where dd.word = LOWER(dd.word)
+            group by dd.word
+        ) dd3 on SUBSTRING(dd3.word, 1) = LOWER(SUBSTRING(dd1.word, 1))
+        where SUBSTRING(dd2.word, 1) = LOWER(SUBSTRING(dd2.word, 1))
+        and SUBSTRING(dd2.word, 1) = LOWER(SUBSTRING(dd1.word, 1))
+        and (dd1.freq) > (dd3.freq * {config['rateo_more_uppercase_init']} );
         '''
         cur.execute(clean_first_word_uppercase)
+
+        print('Unifying Duplicates!\n')
+
+        unify_duplicates_1 = f'''
+        update {file_name}_dict dd
+        set freq = dd2.freq
+        from (
+            select word, sum(freq) freq, min(word_code) word_code
+            from {file_name}_dict dd2
+            group by word
+        ) dd2 
+        where dd.word_code = dd2.word_code;
+        '''
+        unify_duplicates_1 = unify_duplicates_1.replace('\n', '')
+        unify_duplicates_1 = re.sub(' +', ' ', unify_duplicates_1)       
+
+        unify_duplicates_2 = f'''
+        update {file_name}_dict dd
+        set freq = 0
+        from (
+            select word, sum(freq) freq, min(word_code) word_code
+            from {file_name}_dict dd2
+            group by word
+        ) dd2 
+        where dd.word_code != dd2.word_code
+        and dd.word = dd2.word;
+        '''
+        unify_duplicates_2 = unify_duplicates_2.replace('\n', '')
+        unify_duplicates_2 = re.sub(' +', ' ', unify_duplicates_2)        
+
+        unify_duplicates_3 = f'''
+        update {file_name}_text dt
+        set word_code = dd2.word_code
+        from {file_name}_dict dd
+        inner join {file_name}_dict dd2 on (dd.word = dd2.word and dd.word_code != dd2.word_code and dd2.freq != 0)
+        where dt.word_code = dd.word_code
+        and dd.freq = 0;
+        '''
+        unify_duplicates_3 = unify_duplicates_3.replace('\n', '')
+        unify_duplicates_3 = re.sub(' +', ' ', unify_duplicates_3)        
+
+        unify_duplicates_4 = f'''
+        delete from {file_name}_dict dd
+        where dd.freq = 0;
+        '''
+        unify_duplicates_4 = unify_duplicates_4.replace('\n', '')
+        unify_duplicates_4 = re.sub(' +', ' ', unify_duplicates_4)
+
+        cur.execute(unify_duplicates_1)
+        cur.execute(unify_duplicates_2)
+        cur.execute(unify_duplicates_3)
+        cur.execute(unify_duplicates_4)
+
+        print('Cleaning Diacritic!\n')
+
+        clean_diacritic = f'''
+        update {file_name}_dict dd 
+        set word = dd2.word 
+        from (
+            select distinct on (dd.id) dd.id id, dd2.word word
+            from {file_name}_dict dd 
+            inner join {file_name}_dict dd2 on SUBSTRING(dd.word, 1, LENGTH(dd.word) - 1) = SUBSTRING(dd2.word, 1, LENGTH(dd2.word) - 1)
+            where LENGTH(dd.word) > 1
+            and dd.freq > 1
+            and(
+                (RIGHT(dd2.word, 1) ~ '[àáa]' and RIGHT(dd.word, 1) ~ '[àáa]')
+                or (RIGHT(dd2.word, 1) ~ '[èée]' and RIGHT(dd.word, 1) ~ '[èée]')
+                or (RIGHT(dd2.word, 1) ~ '[ìíi]' and RIGHT(dd.word, 1) ~ '[ìíi]')
+                or (RIGHT(dd2.word, 1) ~ '[òóo]' and RIGHT(dd.word, 1) ~ '[òóo]')
+                or (RIGHT(dd2.word, 1) ~ '[ùúu]' and RIGHT(dd.word, 1) ~ '[ùúu]')
+            )
+            and dd.word != dd2.word
+            and (dd.freq * {config['rateo_diacritic']}) < dd2.freq 
+            order by dd.id, dd2.freq desc
+        ) dd2
+        where dd.id = dd2.id
+        '''
+        clean_diacritic = clean_diacritic.replace('\n', '')
+        clean_diacritic = re.sub(' +', ' ', clean_diacritic)
+
+        cur.execute(clean_diacritic)
+        cur.execute(unify_duplicates_1)
+        cur.execute(unify_duplicates_2)
+        cur.execute(unify_duplicates_3)
+        cur.execute(unify_duplicates_4)
 
         conn.commit()
         cur.close()

@@ -52,10 +52,14 @@ contro
 io
 tu
 lui
+egli
+ella
+esso
 lei
 noi
 voi
 loro
+essi
 mio
 mia
 miei
